@@ -24,7 +24,7 @@
 //
 function addBoxes() {
   let boxX = 0.4;
-  const boxY = 1;
+  let boxY = 1;
   let boxZ = 0.4;
   let colorBlue = 0;
   let colorGreen = 0;
@@ -32,31 +32,45 @@ function addBoxes() {
   let boxGeometry;
   let boxMaterial;
   let boxMesh;
-  // @ts-ignore
-  for (let xloop = 0; xloop < 19; xloop += 1) {
-    for (let yloop = 0; yloop < 9; yloop += 1) {
-      boxX = -0.25 + ((xloop + 1) * 0.025);
-      boxZ = -0.75 - ((yloop + 1) * 0.05);
+  let centerY;
+  let centerZ;
+  let centerX;
+  let sizeX;
+  let sizeY;
+  let sizeZ;
+  let scale = 0.025;
+  // using blender coordinates as inputs
+  for (let xLoop = 0; xLoop < 9; xLoop += 1) {
+    for (let yLoop = 0; yLoop < 12; yLoop += 1) {
+      centerX = 1.0 + (xLoop * 2.0);
+      centerY = 1.0 + (yLoop * 1.45);
+      centerZ = 1.0;
+      sizeX = 1.0;
+      sizeY = 1.4;
+      sizeZ = 2.0;
+      // converting to three.js table
+      boxX = (tableWidth * -0.5) + (centerY * scale);
+      boxY = tableHeight + (centerZ * scale);
+      boxZ = tableZCenter - (tableWidth * 0.5) + (centerX * scale);
       // @ts-ignore
-      boxGeometry = new THREE.BoxGeometry(0.024, 0.04, 0.024);
+      boxGeometry = new THREE.BoxGeometry(sizeY * scale, sizeZ * scale, sizeX * scale);
       // @ts-ignore
       boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+      boxMesh.position.x = boxX;
+      boxMesh.position.y = boxY;
+      boxMesh.position.z = boxZ;
       // @ts-ignore
       boxMaterial = new THREE.MeshStandardMaterial();
       colorBlue = 0.5 + (Math.random() * 0.5);
       colorGreen = 0.5 + (Math.random() * 0.5);
       colorRed = 0.5 + (Math.random() * 0.5);
       boxMaterial.color.setRGB(colorRed, colorGreen, colorBlue);
-      boxMesh.position.x = boxX;
-      boxMesh.position.y = 0.82;
-      boxMesh.position.z = boxZ;
       boxMesh.name = 'testing';
       scene.add(boxMesh);
     }
   }
 }
 function init() {
-  const zCenter = -1.0;
   const container = document.createElement('div');
   document.body.appendChild(container);
   scene = new THREE.Scene();
@@ -66,18 +80,18 @@ function init() {
   camera = new THREE.PerspectiveCamera(50, cameraRatio, 0.01, 50);
   camera.position.set(0, 1.8, 0);
   controls = new OrbitControls(camera, container);
-  controls.target.set(0, 0.8, zCenter);
+  controls.target.set(0, 0.8, tableZCenter);
   controls.update();
   // table
-  const tableGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.5);
+  const tableGeometry = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth);
   const tableMaterial = new THREE.MeshStandardMaterial({
     color: 0x444444,
     roughness: 1.0,
     metalness: 0.0
   });
   const table = new THREE.Mesh(tableGeometry, tableMaterial);
-  table.position.y = 0.4;
-  table.position.z = zCenter;
+  table.position.y = (tableHeight * 0.5);
+  table.position.z = tableZCenter;
   scene.add(table);
   // boxes
   addBoxes();
@@ -90,16 +104,16 @@ function init() {
   });
   const floor = new THREE.Mesh(floorGometry, floorMaterial);
   floor.rotation.x = - Math.PI / 2;
-  floor.position.z = zCenter;
+  floor.position.z = tableZCenter;
   scene.add(floor);
   // grid
   const grid = new THREE.GridHelper(10, 20, 0x111111, 0x111111);
-  grid.position.z = zCenter;
+  grid.position.z = tableZCenter;
   scene.add(grid);
   scene.add(new THREE.HemisphereLight(0x888877, 0x777788));
   // light
   const light = new THREE.DirectionalLight(0xffffff, 0.5);
-  light.position.set(0, 4, zCenter);
+  light.position.set(0, 4, tableZCenter);
   scene.add(light);
   // painters
   const painter1 = new TubePainter();
@@ -189,6 +203,9 @@ import * as THREE from 'three';
 import { OrbitControls } from './OrbitControls.js';
 import { TubePainter } from './TubePainter.js';
 import { VRButton } from './VRButton.js';
+let tableZCenter = -0.5;
+let tableHeight = 0.7;
+let tableWidth = 0.5;
 let camera;
 let scene;
 let renderer;
