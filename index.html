@@ -7,9 +7,6 @@
     <link type="text/css" rel="stylesheet" href="main.css">
   </head>
   <body>
-    <div id="info">
-      <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> vr - paint
-    </div>
     <!-- Import maps polyfill -->
     <!-- Remove this when import maps will be widely supported -->
     <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
@@ -22,6 +19,50 @@
     </script>
     <script type="module">
 //
+function spectrumGreenRed(numerator, denominator) {
+  let decimalBlue;
+  let decimalGreen;
+  let decimalRed;
+  let decimal;
+  let saturation;
+  decimalBlue = 1;
+  decimalGreen = 0;
+  decimalRed = 0;
+  saturation = 1;
+  decimal = numerator / denominator;
+  if (denominator == 0){
+    decimal = 1;
+  }
+  if (decimal < 0) {
+    decimal = 0;
+  }
+  if (decimal > 1) {
+    decimal = 1;
+  }
+  // green to yellow
+  if (decimal < 0.5) {
+    decimalBlue = (1 - saturation);
+    decimalGreen = 1;
+    decimalRed = (1 - saturation) + (decimal / 0.5 * saturation);
+  }
+  // yellow to red
+  if (decimal >= 0.5) {
+    decimalBlue = (1 - saturation);
+    decimalGreen = (1 - saturation) + (saturation - ((decimal - 0.5) / 0.5) * saturation);
+    decimalRed = 1;
+  }
+  // max or over, hard red
+  if (decimal >= 1.0) {
+    decimalBlue = 0;
+    decimalGreen = 0;
+    decimalRed = 1;
+  }
+  return [
+    decimalBlue,
+    decimalGreen,
+    decimalRed
+  ];
+}
 function addBoxes() {
   let boxX = 0.4;
   let boxY = 1;
@@ -40,14 +81,14 @@ function addBoxes() {
   let sizeZ;
   let scale = 0.025;
   // using blender coordinates as inputs
-  for (let xLoop = 0; xLoop < 9; xLoop += 1) {
-    for (let yLoop = 0; yLoop < 12; yLoop += 1) {
-      centerX = 1.0 + (xLoop * 2.0);
-      centerY = 1.0 + (yLoop * 1.45);
-      centerZ = 1.0;
+  for (let xLoop = 0; xLoop < 20; xLoop += 1) {
+    for (let yLoop = 0; yLoop < 20; yLoop += 1) {
+      centerX = 0.5 + (xLoop * 1.0);
+      centerY = 0.5 + (yLoop * 1.0);
       sizeX = 1.0;
-      sizeY = 1.4;
-      sizeZ = 2.0;
+      sizeY = 1.0;
+      sizeZ = 1 + (Math.random() * 10);
+      centerZ = sizeZ * 0.5;
       // converting to three.js table
       boxX = (tableWidth * -0.5) + (centerY * scale);
       boxY = tableHeight + (centerZ * scale);
@@ -55,16 +96,18 @@ function addBoxes() {
       // @ts-ignore
       boxGeometry = new THREE.BoxGeometry(sizeY * scale, sizeZ * scale, sizeX * scale);
       // @ts-ignore
+      boxMaterial = new THREE.MeshStandardMaterial();
+      [
+        colorBlue,
+        colorGreen,
+        colorRed
+      ] = spectrumGreenRed(sizeZ, 11);
+      boxMaterial.color.setRGB(colorRed, colorGreen, colorBlue);
       boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
       boxMesh.position.x = boxX;
       boxMesh.position.y = boxY;
       boxMesh.position.z = boxZ;
       // @ts-ignore
-      boxMaterial = new THREE.MeshStandardMaterial();
-      colorBlue = 0.5 + (Math.random() * 0.5);
-      colorGreen = 0.5 + (Math.random() * 0.5);
-      colorRed = 0.5 + (Math.random() * 0.5);
-      boxMaterial.color.setRGB(colorRed, colorGreen, colorBlue);
       boxMesh.name = 'testing';
       scene.add(boxMesh);
     }
@@ -74,13 +117,13 @@ function init() {
   const container = document.createElement('div');
   document.body.appendChild(container);
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x222222);
+  scene.background = new THREE.Color(0x000000);
   // camera
   const cameraRatio = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(50, cameraRatio, 0.01, 50);
-  camera.position.set(0, 1.8, 0);
+  camera.position.set(0, 1.5, 0);
   controls = new OrbitControls(camera, container);
-  controls.target.set(0, 0.8, tableZCenter);
+  controls.target.set(0, tableHeight, tableZCenter);
   controls.update();
   // table
   const tableGeometry = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth);
@@ -89,29 +132,29 @@ function init() {
     roughness: 1.0,
     metalness: 0.0
   });
-  const table = new THREE.Mesh(tableGeometry, tableMaterial);
-  table.position.y = (tableHeight * 0.5);
-  table.position.z = tableZCenter;
-  scene.add(table);
+  // const table = new THREE.Mesh(tableGeometry, tableMaterial);
+  // table.position.y = (tableHeight * 0.5);
+  // table.position.z = tableZCenter;
+  // scene.add(table);
   // boxes
   addBoxes();
   // floor
-  const floorGometry = new THREE.PlaneGeometry(4, 4);
-  const floorMaterial = new THREE.MeshStandardMaterial({
-    color: 0x222222,
-    roughness: 1.0,
-    metalness: 0.0
-  });
-  const floor = new THREE.Mesh(floorGometry, floorMaterial);
-  floor.rotation.x = - Math.PI / 2;
-  floor.position.z = tableZCenter;
-  scene.add(floor);
+  // const floorGometry = new THREE.PlaneGeometry(4, 4);
+  // const floorMaterial = new THREE.MeshStandardMaterial({
+  //   color: 0x222222,
+  //   roughness: 1.0,
+  //   metalness: 0.0
+  // });
+  // const floor = new THREE.Mesh(floorGometry, floorMaterial);
+  // floor.rotation.x = - Math.PI / 2;
+  // floor.position.z = tableZCenter;
+  // scene.add(floor);
   // grid
-  const grid = new THREE.GridHelper(10, 20, 0x111111, 0x111111);
-  grid.position.z = tableZCenter;
-  scene.add(grid);
-  scene.add(new THREE.HemisphereLight(0x888877, 0x777788));
+  // const grid = new THREE.GridHelper(10, 20, 0x111111, 0x111111);
+  // grid.position.z = tableZCenter;
+  // scene.add(grid);
   // light
+  scene.add(new THREE.HemisphereLight(0x888877, 0x777788));
   const light = new THREE.DirectionalLight(0xffffff, 0.5);
   light.position.set(0, 4, tableZCenter);
   scene.add(light);
