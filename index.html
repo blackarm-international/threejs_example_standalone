@@ -17,6 +17,7 @@
         }
       }
     </script>
+    <script src = 'racks.js'></script>
     <script type="module">
 //
 function spectrumGreenRed(numerator, denominator) {
@@ -63,7 +64,7 @@ function spectrumGreenRed(numerator, denominator) {
     decimalRed
   ];
 }
-function addBoxes() {
+function addRacks() {
   let boxX = 0.4;
   let boxY = 1;
   let boxZ = 0.4;
@@ -79,39 +80,37 @@ function addBoxes() {
   let sizeX;
   let sizeY;
   let sizeZ;
-  let scale = 0.025;
-  // using blender coordinates as inputs
-  for (let xLoop = 0; xLoop < 20; xLoop += 1) {
-    for (let yLoop = 0; yLoop < 20; yLoop += 1) {
-      centerX = 0.5 + (xLoop * 1.0);
-      centerY = 0.5 + (yLoop * 1.0);
-      sizeX = 1.0;
-      sizeY = 1.0;
-      sizeZ = 1 + (Math.random() * 10);
-      centerZ = sizeZ * 0.5;
-      // converting to three.js table
-      boxX = (tableWidth * -0.5) + (centerY * scale);
-      boxY = tableHeight + (centerZ * scale);
-      boxZ = tableZCenter - (tableWidth * 0.5) + (centerX * scale);
-      // @ts-ignore
-      boxGeometry = new THREE.BoxGeometry(sizeY * scale, sizeZ * scale, sizeX * scale);
-      // @ts-ignore
-      boxMaterial = new THREE.MeshStandardMaterial();
-      [
-        colorBlue,
-        colorGreen,
-        colorRed
-      ] = spectrumGreenRed(sizeZ, 11);
-      boxMaterial.color.setRGB(colorRed, colorGreen, colorBlue);
-      boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-      boxMesh.position.x = boxX;
-      boxMesh.position.y = boxY;
-      boxMesh.position.z = boxZ;
-      // @ts-ignore
-      boxMesh.name = 'testing';
-      scene.add(boxMesh);
-    }
-  }
+  let scale = 0.1;
+  Object.keys(rackData).forEach((rackSysId) => {
+    // using blender coordinates as inputs
+    centerX = (rackData[rackSysId].centerX - (roomData.sizeX * 0.5)) * scale;
+    centerY = (rackData[rackSysId].centerY - (roomData.sizeY * 0.5)) * scale;
+    centerZ = (rackData[rackSysId].centerZ * scale) + tableHeight;
+    sizeX = rackData[rackSysId].sizeX * scale;
+    sizeY = rackData[rackSysId].sizeY * scale;
+    sizeZ = rackData[rackSysId].sizeZ * scale;
+    console.log('centerX')
+    console.log(centerX)
+    // console.log('centerZ')
+    // console.log(centerZ)
+    // @ts-ignore
+    boxGeometry = new THREE.BoxGeometry(sizeY, sizeZ, sizeX);
+    // @ts-ignore
+    boxMaterial = new THREE.MeshStandardMaterial();
+    [
+      colorBlue,
+      colorGreen,
+      colorRed
+    ] = spectrumGreenRed(Math.random(), 1);
+    boxMaterial.color.setRGB(colorRed, colorGreen, colorBlue);
+    boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+    boxMesh.position.x = centerY;
+    boxMesh.position.y = centerZ;
+    boxMesh.position.z = centerX;
+    // @ts-ignore
+    boxMesh.name = 'testing';
+    scene.add(boxMesh);
+  });
 }
 function init() {
   const container = document.createElement('div');
@@ -121,23 +120,23 @@ function init() {
   // camera
   const cameraRatio = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(50, cameraRatio, 0.01, 50);
-  camera.position.set(0, 1.5, 0);
+  camera.position.set(0, 1.8, 0);
   controls = new OrbitControls(camera, container);
-  controls.target.set(0, tableHeight, tableZCenter);
+  controls.target.set(0, tableHeight, 0);
   controls.update();
   // table
-  const tableGeometry = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth);
-  const tableMaterial = new THREE.MeshStandardMaterial({
-    color: 0x444444,
-    roughness: 1.0,
-    metalness: 0.0
-  });
+  // const tableGeometry = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth);
+  // const tableMaterial = new THREE.MeshStandardMaterial({
+  //   color: 0x444444,
+  //   roughness: 1.0,
+  //   metalness: 0.0
+  // });
   // const table = new THREE.Mesh(tableGeometry, tableMaterial);
   // table.position.y = (tableHeight * 0.5);
-  // table.position.z = tableZCenter;
+  // table.position.z = 0;
   // scene.add(table);
   // boxes
-  addBoxes();
+  // addBoxes();
   // floor
   // const floorGometry = new THREE.PlaneGeometry(4, 4);
   // const floorMaterial = new THREE.MeshStandardMaterial({
@@ -147,16 +146,18 @@ function init() {
   // });
   // const floor = new THREE.Mesh(floorGometry, floorMaterial);
   // floor.rotation.x = - Math.PI / 2;
-  // floor.position.z = tableZCenter;
+  // floor.position.z = 0;
   // scene.add(floor);
   // grid
   // const grid = new THREE.GridHelper(10, 20, 0x111111, 0x111111);
-  // grid.position.z = tableZCenter;
+  // grid.position.z = 0;
   // scene.add(grid);
+  // racks
+  addRacks();
   // light
   scene.add(new THREE.HemisphereLight(0x888877, 0x777788));
   const light = new THREE.DirectionalLight(0xffffff, 0.5);
-  light.position.set(0, 4, tableZCenter);
+  light.position.set(0, 4, 0);
   scene.add(light);
   // painters
   const painter1 = new TubePainter();
@@ -246,9 +247,12 @@ import * as THREE from 'three';
 import { OrbitControls } from './OrbitControls.js';
 import { TubePainter } from './TubePainter.js';
 import { VRButton } from './VRButton.js';
-let tableZCenter = -0.5;
-let tableHeight = 0.7;
-let tableWidth = 0.5;
+// room dimensions in blender orientation
+let roomData = {
+  'sizeX': 16,
+  'sizeY': 16
+}
+let tableHeight = 0.0;
 let camera;
 let scene;
 let renderer;
