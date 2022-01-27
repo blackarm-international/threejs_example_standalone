@@ -82,8 +82,12 @@ function addRacks() {
   let sizeZ;
   Object.keys(rackData).forEach((rackSysId) => {
     // using blender coordinates as inputs
-    centerX = (rackData[rackSysId].centerX - (roomData.sizeX * 0.5)) * scale;
+    // the player spawns in vr on 0,0,0 facing -X
+    // move whole scene negative x to appear in front of the player
+    centerX = ((rackData[rackSysId].centerX - roomData.sizeX) * scale) - tableDistance;
+    // move the scene negative y, half the room dimension so it is centered on the player
     centerY = (rackData[rackSysId].centerY - (roomData.sizeY * 0.5)) * scale;
+    // adjust the 'table' height
     centerZ = (rackData[rackSysId].centerZ * scale) + tableHeight;
     sizeX = rackData[rackSysId].sizeX * scale;
     sizeY = rackData[rackSysId].sizeY * scale;
@@ -119,9 +123,10 @@ function init() {
   // camera
   const cameraRatio = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(50, cameraRatio, 0.01, 50);
-  camera.position.set(-1, 1.8, -1);
+  camera.position.set(0, 1.0, 0);
   controls = new OrbitControls(camera, container);
-  controls.target.set(0, tableHeight, 0);
+  var controlX = 0 - tableDistance - (roomData.sizeX * 0.5 * scale);
+  controls.target.set(0, tableHeight, controlX);
   controls.update();
   // table
   // const tableGeometry = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth);
@@ -251,8 +256,9 @@ let roomData = {
   'sizeX': 16,
   'sizeY': 16
 }
-let scale = 0.08;
-let tableHeight = 0.6;
+let scale = 0.04;
+let tableHeight = 0.5;
+let tableDistance = 0.4;
 let camera;
 let scene;
 let renderer;
