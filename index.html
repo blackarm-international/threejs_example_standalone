@@ -80,7 +80,6 @@ function addRacks() {
   let sizeX;
   let sizeY;
   let sizeZ;
-  let scale = 0.1;
   Object.keys(rackData).forEach((rackSysId) => {
     // using blender coordinates as inputs
     centerX = (rackData[rackSysId].centerX - (roomData.sizeX * 0.5)) * scale;
@@ -120,7 +119,7 @@ function init() {
   // camera
   const cameraRatio = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(50, cameraRatio, 0.01, 50);
-  camera.position.set(0, 1.8, 0);
+  camera.position.set(-1, 1.8, -1);
   controls = new OrbitControls(camera, container);
   controls.target.set(0, tableHeight, 0);
   controls.update();
@@ -252,7 +251,8 @@ let roomData = {
   'sizeX': 16,
   'sizeY': 16
 }
-let tableHeight = 0.0;
+let scale = 0.08;
+let tableHeight = 0.6;
 let camera;
 let scene;
 let renderer;
