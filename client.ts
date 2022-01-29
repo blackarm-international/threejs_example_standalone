@@ -1725,7 +1725,7 @@ function handleController(controller: any) {
 function render() {
   handleController(controller1);
   handleController(controller2);
-  handle.rotation.y += 0.002;
+  // handle.rotation.y += 0.002;
   renderer.render(scene, camera);
 }
 function animate() {
