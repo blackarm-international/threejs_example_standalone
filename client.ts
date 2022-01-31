@@ -5,7 +5,9 @@ let controller1: any;
 let controller2: any;
 // @ts-ignore
 const cursor = new THREE.Vector3();
+let delta: number;
 let handle: any;
+let prevTime: any = performance.now();
 let renderer: any;
 let scale = 0.04;
 let scene: any;
@@ -1722,10 +1724,28 @@ function handleController(controller: any) {
     painter.moveTo(cursor);
   }
 }
+function calculateDelta() {
+  // let fpsDiv: HTMLInputElement | null;
+  let time: any;
+  time = performance.now();
+  delta = (time - prevTime);
+  prevTime = time;
+  // calculate fps
+  // fpsCount += 1;
+  // if (time > (fpsLastTime + 1000)) {
+  //     fpsDiv = <HTMLInputElement>document.getElementById('fps');
+  //     if (fpsDiv) {
+  //         fpsDiv.innerText = 'FPS ' + fpsCount;
+  //     }
+  //     fpsLastTime = time;
+  //     fpsCount = 0;
+  // }
+}
 function render() {
   handleController(controller1);
   handleController(controller2);
-  // handle.rotation.y += 0.002;
+  calculateDelta();
+  handle.rotation.y += delta * 0.0001;
   renderer.render(scene, camera);
 }
 function animate() {

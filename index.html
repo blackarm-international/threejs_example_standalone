@@ -26,7 +26,9 @@
       var controller1;
       var controller2;
       var cursor = new THREE.Vector3();
+      var delta;
       var handle;
+      var prevTime = performance.now();
       var renderer;
       var scale = 0.04;
       var scene;
@@ -1705,10 +1707,28 @@
           painter.moveTo(cursor);
         }
       }
+      function calculateDelta() {
+        // let fpsDiv: HTMLInputElement | null;
+        var time;
+        time = performance.now();
+        delta = (time - prevTime);
+        prevTime = time;
+        // calculate fps
+        // fpsCount += 1;
+        // if (time > (fpsLastTime + 1000)) {
+        //   fpsDiv = <HTMLInputElement>document.getElementById('fps');
+        //   if (fpsDiv) {
+        //     fpsDiv.innerText = 'FPS ' + fpsCount;
+        //   }
+        //   fpsLastTime = time;
+        //   fpsCount = 0;
+        // }
+      }
       function render() {
         handleController(controller1);
         handleController(controller2);
-        // handle.rotation.y += 0.002;
+        calculateDelta();
+        handle.rotation.y += delta * 0.0001;
         renderer.render(scene, camera);
       }
       function animate() {
